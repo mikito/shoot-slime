@@ -12,6 +12,7 @@ window.onload = function () {
     game.onload = function () {
         player = new Player(160 - 16, 320 - 32 - 16);
         enemies = {}; 
+        shootCount = 0;
         
         game.rootScene.backgroundColor = '#E0FFFF';
 
@@ -30,7 +31,12 @@ window.onload = function () {
                     enemies[game.frame] = enemy;
                 }
             }
+            
             scoreLabel.score = game.score;
+
+            if(player.dead && shootCount <= 0){
+                game.end(game.score, "SCORE: " + game.score)
+            }
         });
 
         // Score Label
@@ -59,6 +65,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.y = y;
         this.frame = 0;
         this.scaleX = 1;
+        this.dead = false;
         game.keybind(90, 'a'); // z key
 
         this.addEventListener('enterframe', this.move);
@@ -88,7 +95,19 @@ var Player = enchant.Class.create(enchant.Sprite, {
          }else if(this.x > 320 - this.width){
              this.x = 320 - this.width;
          }
+    },
+
+    death : function(){
+        this.dead = true;
+        game.rootScene.removeChild(this);
+        game.score += 1;
+        new Score(this.x, this.y, 1);
+
+        for(var i = 0; i < 5 ; i++){
+            new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), 2);
+        }
     }
+
 });
 
 var Enemy = enchant.Class.create(enchant.Sprite, {
@@ -138,7 +157,8 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
 
         // Collision
         if(player.within(this, this.height/3)) {
-            game.end(game.score, "SCORE: " + game.score)
+            player.death();
+            this.remove();
         }
     },
 
@@ -161,10 +181,12 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
         this.frame = 0;
         this.direction = direction;
         this.moveSpeed = 10;
+        this.dead = false;
 
         this.addEventListener('enterframe', this.move);
 
         game.rootScene.addChild(this);
+        shootCount++;
     },
 
     move: function(){
@@ -200,7 +222,10 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
     },
 
     remove: function () {
+        if(this.dead) return;
         game.rootScene.removeChild(this);
+        shootCount--;
+        this.dead = true;
         delete this;
     }
 });
