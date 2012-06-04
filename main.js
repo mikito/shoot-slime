@@ -10,34 +10,7 @@ window.onload = function () {
     game.touched = false;
     game.preload('./images/bg.png', './images/graphic.png', './images/player.gif', './images/enemy.gif', './images/shot.gif');
     game.onload = function () {
-        player = new Player(160 - 16, 320 - 32 - 16);
-        enemies = {}; 
-        shootCount = 0;
-        
         game.rootScene.backgroundColor = '#E0FFFF';
-
-        game.rootScene.addEventListener('enterframe', function () {
-            if(rand(1500) < game.frame / 20 * Math.sin(game.frame / 100) + game.frame / 20 + 50) {
-                var enemyCount = 0;
-                for (var i in enemies) {
-                    enemyCount++;
-                }
-                if(enemyCount < 15){
-                    var x = rand(320); // Appear Position
-                    var v = (rand(6)-3) * 3; // x Velocity
-                    if(v == 0) v = 1;
-                    var enemy = new Enemy(x, -32, v);
-                    enemy.key = game.frame;
-                    enemies[game.frame] = enemy;
-                }
-            }
-            
-            scoreLabel.score = game.score;
-
-            if(player.dead && shootCount <= 0){
-                game.end(game.score, "SCORE: " + game.score)
-            }
-        });
 
         // Score Label
         scoreLabel = new ScoreLabel(8, 8);
@@ -48,10 +21,43 @@ window.onload = function () {
         bg.image = game.assets['./images/bg.png'];
         bg.y = 320 - 16;
         game.rootScene.addChild(bg);
+
+        player = new Player(160 - 16, 320 - 32 - 16);
+        enemies = {}; 
+        shootCount = 0;
+        
+        // Main Loop
+        game.rootScene.addEventListener('enterframe', update);
     };
     game.start();
 };
 
+function update(){
+    // Spawn Enemy
+    if(rand(1500) < game.frame / 20 * Math.sin(game.frame / 100) + game.frame / 20 + 50) {
+        var enemyCount = 0;
+        for (var i in enemies) {
+            enemyCount++;
+        }
+        if(enemyCount < 15){
+            var x = rand(320); // Appear Position
+            var v = (rand(6)-3) * 3; // x Velocity
+            if(v == 0) {
+                v = 1;
+            }
+            var enemy = new Enemy(x, -32, v);
+            enemy.key = game.frame;
+            enemies[game.frame] = enemy;
+        }
+    }
+            
+    if(player.dead && shootCount <= 0){
+        game.end(game.score, "SCORE: " + game.score)
+    }
+
+    // Socre Label
+    scoreLabel.score = game.score;
+};
 
 
 /**
@@ -65,6 +71,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.y = y;
         this.frame = 0;
         this.scaleX = 1;
+        this.temp_dead = false;
         this.dead = false;
         game.keybind(90, 'a'); // z key
 
