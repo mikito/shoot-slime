@@ -25,6 +25,7 @@ window.onload = function () {
         player = new Player(160 - 16, 320 - 32 - 16);
         enemies = {}; 
         shootCount = 0;
+        game.revivalCount = 0;
         
         // Main Loop
         game.rootScene.addEventListener('enterframe', update);
@@ -50,7 +51,7 @@ function update(){
             enemies[game.frame] = enemy;
         }
     }
-            
+    
     if(player.dead && shootCount <= 0){
         game.end(game.score, "SCORE: " + game.score)
     }
@@ -66,18 +67,31 @@ function update(){
 var Player = enchant.Class.create(enchant.Sprite, {
     initialize: function (x, y) {
         enchant.Sprite.call(this, 32, 32);
+        this.RIVIVAL_TIME_LIMIT = 100;
         this.image = game.assets['./images/player.gif'];
+        this.buttonDown = false;
         this.x = x;
         this.y = y;
         this.frame = 0;
         this.scaleX = 1;
-        this.temp_dead = false;
+        this.tempDead = false;
+        this.rivivalCount = 0;
+        this.rivivalTimeCount = 0;
         this.dead = false;
+        this.challenge = 4;
         game.keybind(90, 'a'); // z key
 
-        this.addEventListener('enterframe', this.move);
+        this.addEventListener('enterframe', this.update);
 
         game.rootScene.addChild(this);
+    },
+
+    update : function (){
+        if(!this.tempDead){
+            this.move();
+        }else{
+            this.tryRivival();
+        }
     },
 
     move: function(){
@@ -104,6 +118,38 @@ var Player = enchant.Class.create(enchant.Sprite, {
          }
     },
 
+    tryRivival : function (){
+        if(game.input.left && this.buttonDown == false){
+            this.rivivalCount++;
+            if(this.rivivalCount >= this.challenge){
+                this.rivival();
+                return;
+            }
+            this.buttonDown = true;
+        }
+        if(game.input.right){
+            this.buttonDown = false;
+        }
+
+        if(this.rivivalTimeCount == this.RIVIVAL_TIME_LIMIT){
+            this.death();
+        }
+        this.rivivalTimeCount++;
+    },
+
+    rivival : function (){
+        this.rivivalCount = 0;
+        this.tempDead = false;
+        this.challenge++;
+    },
+
+    tempDeath : function (){
+        if(this.tempDead) return;
+        this.tempDead = true;
+        this.rivivalCount = 0;
+        this.rivivalTimeCount = 0;
+    },
+
     death : function(){
         this.dead = true;
         game.rootScene.removeChild(this);
@@ -114,7 +160,6 @@ var Player = enchant.Class.create(enchant.Sprite, {
             new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), 2);
         }
     }
-
 });
 
 var Enemy = enchant.Class.create(enchant.Sprite, {
@@ -164,8 +209,9 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
 
         // Collision
         if(player.within(this, this.height/3)) {
-            player.death();
-            this.remove();
+            if(!player.tempDead){
+                player.tempDeath();
+            }
         }
     },
 
