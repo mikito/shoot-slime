@@ -131,13 +131,13 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
         }
         
         // Bouncing
-        if(this.y > 320 - this.height - 16){
+        if(this.y > 320 - this.height - 8){
             this.velocity_y *=- 0.9;
-            this.y = 320 - this.height - 16;
+            this.y = 320 - this.height - 8;
         }
 
         // Collision
-        if(player.within(this, this.height/2)) {
+        if(player.within(this, this.height/3)) {
             game.end(game.score, "SCORE: " + game.score)
         }
     },
