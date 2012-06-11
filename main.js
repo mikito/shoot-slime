@@ -8,7 +8,11 @@ window.onload = function () {
     game.fps = 24;
     game.score = 0;
     game.touched = false;
-    game.preload('./images/bg.png', './images/graphic.png', './images/player.gif', './images/enemy.gif', './images/shot.gif');
+    game.preload('./images/bg.png',
+                 './images/graphic.png',
+                 './images/player.gif',
+                 './images/enemy.gif',
+                 './images/shot.gif');
     game.onload = function () {
         game.rootScene.backgroundColor = '#E0FFFF';
 
@@ -210,7 +214,7 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
         }
 
         // Collision
-        if(player.within(this, this.height/3)) {
+        if(player.within(this, this.height/2)) {
             if(!player.tempDead){
                 player.tempDeath();
             }
