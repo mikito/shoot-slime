@@ -279,7 +279,13 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
     hit: function(){
         this.addScore(this.rate);
         for(var i = 0; i < 3 ; i++){
-            new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), this.rate * 2);
+            var nextRate;
+            if(this.rate >= 4096){
+                nextRate = 4096;
+            }else{
+                nextRate = this.rate * 2;
+            }
+            new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
         }
     },
 
@@ -330,6 +336,9 @@ var Score = enchant.Class.create(Label, {
         this.count = this.MAX_COUNT;
         this._element.style.opacity = 1.0;
         this.font = "12px cursive";
+        if(score >= 1024){
+          this.color = "#FF0000";
+        }
 
         this.addEventListener('enterframe', function () {
             this.count--;
