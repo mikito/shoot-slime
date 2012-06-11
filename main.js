@@ -12,7 +12,8 @@ window.onload = function () {
                  './images/graphic.png',
                  './images/player.gif',
                  './images/enemy.gif',
-                 './images/shot.gif');
+                 './images/shot.gif',
+                 './images/heart.png');
     game.onload = function () {
         game.rootScene.backgroundColor = '#E0FFFF';
 
@@ -53,6 +54,7 @@ function update(){
             var enemy = new Enemy(x, -32, v);
             enemy.key = game.frame;
             enemies[game.frame] = enemy;
+
         }
     }
     
@@ -173,6 +175,13 @@ var Player = enchant.Class.create(enchant.Sprite, {
         for(var i = 0; i < 5 ; i++){
             new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), 2);
         }
+    },
+
+    cure : function(){
+        this.challenge -= 2;
+        if(this.challenge <= 4){
+            this.challenge = 4;
+        }
     }
 });
 
@@ -278,13 +287,14 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
 
     hit: function(){
         this.addScore(this.rate);
+        var nextRate;
+        if(this.rate >= 4096){
+            nextRate = 4096;
+            new Heart(rand(320 - 20), -32);
+        }else{
+            nextRate = this.rate * 2;
+        }
         for(var i = 0; i < 3 ; i++){
-            var nextRate;
-            if(this.rate >= 4096){
-                nextRate = 4096;
-            }else{
-                nextRate = this.rate * 2;
-            }
             new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
         }
     },
@@ -356,7 +366,7 @@ var Score = enchant.Class.create(Label, {
 /**
  * Count Down Label Object
  */
-var CountDown= enchant.Class.create(Label, {
+var CountDown = enchant.Class.create(Label, {
     initialize : function (x, y, count, color){
         enchant.Label.call(this, count);
         this.MAX_COUNT = game.fps;
@@ -377,5 +387,50 @@ var CountDown= enchant.Class.create(Label, {
         });
 
         game.rootScene.addChild(this);
+    }
+});
+
+/**
+ * Cure Life 
+ */
+
+var Heart = enchant.Class.create(Sprite, {
+    initialize: function (x, y) {
+        enchant.Sprite.call(this, 20, 20);
+        this.COUNT_DOWN = game.fps * 3;
+        this.image = game.assets['./images/heart.png'];
+        this.x = x;
+        this.y = y;
+        this.frame = 0;
+        this.count = 0;
+
+        this.addEventListener('enterframe', this.move);
+        game.rootScene.addChild(this);
+    },
+
+    move : function(){
+        this.y += 2;
+        if(this.y >= 320 - 32){
+            this.y = 320 - 32;
+            this.count ++;
+        }
+
+        if(this.count >= game.fps){
+            if(this.count % 2 == 0){
+                this._element.style.opacity = 0.0;
+            }else{
+                this._element.style.opacity = 1.0;
+            }
+        }
+        
+        if(this.count >= this.COUNT_DOWN){
+            game.rootScene.removeChild(this);
+        }
+
+        // Collision
+        if(player.within(this, this.height)) {
+            player.cure();
+            game.rootScene.removeChild(this);
+        }
     }
 });
