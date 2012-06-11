@@ -125,9 +125,10 @@ var Player = enchant.Class.create(enchant.Sprite, {
                 this.rivival();
                 return;
             }
+            this.scaleX = -1;
             this.buttonDown = true;
-        }
-        if(game.input.right){
+        }else if(game.input.right){
+            this.scaleX = 1;
             this.buttonDown = false;
         }
 
@@ -148,6 +149,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.tempDead = true;
         this.rivivalCount = 0;
         this.rivivalTimeCount = 0;
+        this.frame = 3;
     },
 
     death : function(){
