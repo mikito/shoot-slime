@@ -58,6 +58,14 @@ function update(){
     
     if(player.dead && shootCount <= 0){
         game.end(game.score, "SCORE: " + game.score)
+    }else if(player.tempDead){
+        if(player.deathCountDown == game.fps * 3 -1){
+            new CountDown(player.x + 8, player.y - 32, 3, "#AAAAAA");
+        }else if(player.deathCountDown == game.fps * 2 -1){
+            new CountDown(player.x + 8, player.y - 32, 2, "#AAAA33");
+        }else if(player.deathCountDown == game.fps * 1 -1){
+            new CountDown(player.x + 8, player.y - 32, 1, "#AA0000");
+        }
     }
 
     // Socre Label
@@ -71,7 +79,7 @@ function update(){
 var Player = enchant.Class.create(enchant.Sprite, {
     initialize: function (x, y) {
         enchant.Sprite.call(this, 32, 32);
-        this.RIVIVAL_TIME_LIMIT = 100;
+        this.DEATH_COUNT_LIMIT = game.fps * 3;
         this.image = game.assets['./images/player.gif'];
         this.buttonDown = false;
         this.x = x;
@@ -80,7 +88,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.scaleX = 1;
         this.tempDead = false;
         this.rivivalCount = 0;
-        this.rivivalTimeCount = 0;
+        this.deathCountDown = 0;
         this.dead = false;
         this.challenge = 4;
         game.keybind(90, 'a'); // z key
@@ -136,10 +144,10 @@ var Player = enchant.Class.create(enchant.Sprite, {
             this.buttonDown = false;
         }
 
-        if(this.rivivalTimeCount == this.RIVIVAL_TIME_LIMIT){
+        if(this.deathCountDown <= 0){
             this.death();
         }
-        this.rivivalTimeCount++;
+        this.deathCountDown--;
     },
 
     rivival : function (){
@@ -152,7 +160,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         if(this.tempDead) return;
         this.tempDead = true;
         this.rivivalCount = 0;
-        this.rivivalTimeCount = 0;
+        this.deathCountDown = this.DEATH_COUNT_LIMIT;
         this.frame = 3;
     },
 
@@ -321,6 +329,34 @@ var Score = enchant.Class.create(Label, {
         this.y = y;
         this.count = this.MAX_COUNT;
         this._element.style.opacity = 1.0;
+        this.font = "12px cursive";
+
+        this.addEventListener('enterframe', function () {
+            this.count--;
+            this.y--;
+            this._element.style.opacity = this.count / this.MAX_COUNT;
+            if(this.count <= 0){
+               game.rootScene.removeChild(this);
+            }
+        });
+
+        game.rootScene.addChild(this);
+    }
+});
+
+/**
+ * Count Down Label Object
+ */
+var CountDown= enchant.Class.create(Label, {
+    initialize : function (x, y, count, color){
+        enchant.Label.call(this, count);
+        this.MAX_COUNT = game.fps;
+        this.x = x;
+        this.y = y;
+        this.count = this.MAX_COUNT;
+        this._element.style.opacity = 1.0;
+        this.font = "24px cursive";
+        this.color = color;
 
         this.addEventListener('enterframe', function () {
             this.count--;
