@@ -45,7 +45,7 @@ function update(){
         for (var i in enemies) {
             enemyCount++;
         }
-        if(enemyCount < 15){
+        if(enemyCount < 30){
             var x = rand(320); // Appear Position
             var v = (rand(6)-3) * 3; // x Velocity
             if(v == 0) {
