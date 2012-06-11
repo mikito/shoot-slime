@@ -153,7 +153,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
     rivival : function (){
         this.rivivalCount = 0;
         this.tempDead = false;
-        this.challenge++;
+        this.challenge += 2;
     },
 
     tempDeath : function (){
