@@ -256,7 +256,7 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
         this.y = y;
         this.frame = 0;
         this.direction = direction;
-        this.moveSpeed = 10;
+        this.moveSpeed = 13;
         this.dead = false;
 
         this.addEventListener('enterframe', this.move);
@@ -294,7 +294,7 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
         }else{
             nextRate = this.rate * 2;
         }
-        for(var i = 0; i < 3 ; i++){
+        for(var i = 0; i < 5 ; i++){
             new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
         }
     },
