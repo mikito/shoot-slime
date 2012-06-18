@@ -5,6 +5,7 @@
 enchant();
 window.onload = function () {
     game = new Game(320, 320);
+    game.MAX_ENEMY = 50;
     game.fps = 24;
     game.preload('./images/bg.png',
                  './images/player.gif',
@@ -88,7 +89,7 @@ window.onload = function () {
             for (var i in game.enemies) {
                 enemyCount++;
             }
-            if(enemyCount < 30){
+            if(enemyCount < game.MAX_ENEMY){
                 var x = rand(game.width); // Appear Position
                 var v = (rand(6)-3) * 3; // x Velocity
                 if(v == 0) {
