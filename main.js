@@ -84,7 +84,12 @@ window.onload = function () {
      */
     game.rootScene.addEventListener('enterframe', function(){
         // Spawn Enemy
-        if(rand(1500) < game.frame / 20 * Math.sin(game.frame / 100) + game.frame / 20 + 50) {
+        var ea = game.frame / 10  * Math.sin(game.frame / 100) + game.frame / 10 + 80;
+        if(ea > 600){
+          ea = 600;
+        }
+
+        if(rand(1500) < ea) {
             var enemyCount = 0;
             for (var i in game.enemies) {
                 enemyCount++;
@@ -141,7 +146,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.rivivalCount = 0;
         this.deathCountDown = 0;
         this.dead = false;
-        this.challenge = 4;
+        this.challenge = 3;
 
         this.addEventListener('enterframe', this.update);
         game.rootScene.addChild(this);
@@ -202,7 +207,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
     rivival : function (){
         this.rivivalCount = 0;
         this.tempDead = false;
-        this.challenge += 2;
+        this.challenge += 1;
     },
 
     tempDeath : function (){
