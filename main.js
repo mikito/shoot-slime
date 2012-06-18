@@ -284,9 +284,33 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
         }
     },
 
-    remove: function () {
+    remove: function (rate) {
+        this.addScore(rate);
+        var nextRate;
+
+        // Max Score
+        if(rate >= 9999){
+            nextRate = 9999;
+        }else{
+            nextRate = rate * 2;
+        }
+
+        // Cure Item
+        if(rate >= 1024){
+            new Heart(rand(game.width - 20), - 32);
+        }
+
+        for(var i = 0; i < 5 ; i++){
+            new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
+        }
+  
         game.rootScene.removeChild(this);
         delete game.enemies[this.key];
+    },
+
+    addScore: function(score){
+        game.score += score;
+        new Score(this.x, this.y, score);
     }
 });
 
@@ -324,37 +348,10 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
     checkCollision: function(){
         for (var i in game.enemies) {
            if(game.enemies[i].intersect(this)) {
-             game.enemies[i].remove();
-             this.hit();
+             game.enemies[i].remove(this.rate);
              this.remove();
            }
         }
-    },
-
-    hit: function(){
-        this.addScore(this.rate);
-        var nextRate;
-
-        // Max Score
-        if(this.rate >= 9999){
-            nextRate = 9999;
-        }else{
-            nextRate = this.rate * 2;
-        }
-
-        // Cure Item
-        if(this.rate >= 1024){
-            new Heart(rand(game.width - 20), - 32);
-        }
-
-        for(var i = 0; i < 5 ; i++){
-            new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
-        }
-    },
-
-    addScore: function(score){
-        game.score += score;
-        new Score(this.x, this.y, score);
     },
 
     remove: function () {
@@ -400,7 +397,7 @@ var Score = enchant.Class.create(Label, {
         this._element.style.opacity = 1.0;
         this.font = "12px cursive";
         if(score >= 1024){
-          this.color = "#FF0000";
+            this.color = "#FF0000";
         }
 
         this.addEventListener('enterframe', function () {
