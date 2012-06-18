@@ -1,60 +1,40 @@
 /**
- * Shooting Game
+ * Bakuretsu Kumasan
  */
 
 enchant();
 window.onload = function () {
     game = new Game(320, 320);
     game.fps = 24;
-    game.score = 0;
-    game.touched = false;
     game.preload('./images/bg.png',
-                 './images/graphic.png',
                  './images/player.gif',
                  './images/enemy.gif',
                  './images/shot.gif',
                  './images/heart.png');
+    /**
+     * Input Setting 
+     */
     game.touchLeft = false;
     game.touchRight = false;
     game.touchCenter = false;
-    
-    game.onload = function () {
-        game.rootScene.backgroundColor = '#E0FFFF';
 
-        // Score Label
-        scoreLabel = new ScoreLabel(8, 8);
-        game.rootScene.addChild(scoreLabel);
-
-        // Backgound Image
-        var bg = new Sprite(320, 16);
-        bg.image = game.assets['./images/bg.png'];
-        bg.y = 320 - 16;
-        game.rootScene.addChild(bg);
-
-        player = new Player(160 - 16, 320 - 32 - 16);
-        enemies = {}; 
-        shootCount = 0;
-        game.revivalCount = 0;
-
-        
-        // Main Loop
-        game.rootScene.addEventListener('enterframe', update);
-        game.rootScene.addEventListener(Event.TOUCH_START, function(e){
-            if(e.x < 100){
-                game.touchLeft = true;
-            }else if(e.x >= 100 && e.x <= 220){
-                game.touchCenter = true;
-            }else if(e.x > 220){
-                game.touchRight = true;
-            }
-        });
-        game.rootScene.addEventListener(Event.TOUCH_END, function(e){
+    // Touch Input
+    game.rootScene.addEventListener(Event.TOUCH_START, function(e){
+        if(e.x < game.width/3){
+            game.touchLeft = true;
+        }else if(e.x >= game.width/3 && e.x <= game.width * 2 /3){
+            game.touchCenter = true;
+        }else if(e.x > game.width * 2 / 3){
+            game.touchRight = true;
+        }
+    });
+    game.rootScene.addEventListener(Event.TOUCH_END, function(e){
             game.touchLeft = false;
             game.touchRight = false;
             game.touchCenter = false;
-        });
-    };
+    });
 
+    // Integral Key Input
     game.keybind(90, 'a'); // z key
     game.inputLeft = function(){
         if(game.input.left || game.touchLeft){
@@ -75,45 +55,73 @@ window.onload = function () {
         return false;
     }
 
-    game.start();
-};
+    /**
+     * Init Game
+     */
+    game.onload = function (){
+        game.score = 0;
+        game.rootScene.backgroundColor = '#E0FFFF';
 
-function update(){
-    // Spawn Enemy
-    if(rand(1500) < game.frame / 20 * Math.sin(game.frame / 100) + game.frame / 20 + 50) {
-        var enemyCount = 0;
-        for (var i in enemies) {
-            enemyCount++;
-        }
-        if(enemyCount < 30){
-            var x = rand(320); // Appear Position
-            var v = (rand(6)-3) * 3; // x Velocity
-            if(v == 0) {
-                v = 1;
+        // Score Label
+        game.scoreLabel = new ScoreLabel(8, 8);
+        game.rootScene.addChild(game.scoreLabel);
+
+        // Backgound Image
+        game.bg = new Sprite(game.width, 16);
+        game.bg.image = game.assets['./images/bg.png'];
+        game.bg.y = game.height - 16;
+        game.rootScene.addChild(game.bg);
+
+        game.player = new Player((game.width - 32)/ 2, game.height - 32 - game.bg.height);
+        game.enemies = {}; 
+        game.shootCount = 0;
+        game.revivalCount = 0;
+    }
+
+    /**
+     * Main Loop
+     */
+    game.rootScene.addEventListener('enterframe', function(){
+        // Spawn Enemy
+        if(rand(1500) < game.frame / 20 * Math.sin(game.frame / 100) + game.frame / 20 + 50) {
+            var enemyCount = 0;
+            for (var i in game.enemies) {
+                enemyCount++;
             }
-            var enemy = new Enemy(x, -32, v);
-            enemy.key = game.frame;
-            enemies[game.frame] = enemy;
-
+            if(enemyCount < 30){
+                var x = rand(game.width); // Appear Position
+                var v = (rand(6)-3) * 3; // x Velocity
+                if(v == 0) {
+                    v = 1;
+                }
+                var enemy = new Enemy(x, - 32, v);
+                enemy.key = game.frame;
+                game.enemies[game.frame] = enemy;
+            }
         }
-    }
-    
-    if(player.dead && shootCount <= 0){
-        game.end(game.score, "SCORE: " + game.score)
-    }else if(player.tempDead){
-        if(player.deathCountDown == game.fps * 3 -1){
-            new CountDown(player.x + 8, player.y - 32, 3, "#AAAAAA");
-        }else if(player.deathCountDown == game.fps * 2 -1){
-            new CountDown(player.x + 8, player.y - 32, 2, "#AAAA33");
-        }else if(player.deathCountDown == game.fps * 1 -1){
-            new CountDown(player.x + 8, player.y - 32, 1, "#AA0000");
+        
+        // Death Count Down & GameOver
+        if(game.player.dead && game.shootCount <= 0){
+            game.end(game.score, "SCORE: " + game.score)
+        }else if(game.player.tempDead){
+            if(game.player.deathCountDown == game.fps * 3 -1){
+                new CountDown(game.player.x + 8, game.player.y - 32, 3, "#AAAAAA");
+            }else if(game.player.deathCountDown == game.fps * 2 -1){
+                new CountDown(game.player.x + 8, game.player.y - 32, 2, "#AAAA33");
+            }else if(game.player.deathCountDown == game.fps * 1 -1){
+                new CountDown(game.player.x + 8, game.player.y - 32, 1, "#AA0000");
+            }
         }
-    }
 
-    // Socre Label
-    scoreLabel.score = game.score;
-};
+        // Socre Label
+        game.scoreLabel.score = game.score;
+    });
 
+    /**
+     * GameStart
+     */
+    game.start();
+}
 
 /**
  * Charactor
@@ -135,7 +143,6 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.challenge = 4;
 
         this.addEventListener('enterframe', this.update);
-
         game.rootScene.addChild(this);
     },
 
@@ -166,8 +173,8 @@ var Player = enchant.Class.create(enchant.Sprite, {
 
          if(this.x < 0){
              this.x = 0;
-         }else if(this.x > 320 - this.width){
-             this.x = 320 - this.width;
+         }else if(this.x > game.width - this.width){
+             this.x = game.width - this.width;
          }
     },
 
@@ -253,9 +260,9 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
         if(this.x < 0){
             this.velocity_x *= -1;
             this.x = 0
-        }else if(this.x > 320 - this.width){
+        }else if(this.x > game.width - this.width){
             this.velocity_x *= -1;
-            this.x = 320 - this.width;
+            this.x = game.width - this.width;
         }
        
         // Free Fall
@@ -264,22 +271,22 @@ var Enemy = enchant.Class.create(enchant.Sprite, {
         }
         
         // Bouncing
-        if(this.y > 320 - this.height - 8){
+        if(this.y > game.width - this.height - 8){
             this.velocity_y *=- 0.9;
-            this.y = 320 - this.height - 8;
+            this.y = game.width - this.height - 8;
         }
 
         // Collision
-        if(player.within(this, this.height/2)) {
-            if(!player.tempDead){
-                player.tempDeath();
+        if(game.player.within(this, this.height/2)) {
+            if(!game.player.tempDead){
+                game.player.tempDeath();
             }
         }
     },
 
     remove: function () {
         game.rootScene.removeChild(this);
-        delete enemies[this.key];
+        delete game.enemies[this.key];
     }
 });
 
@@ -301,23 +308,23 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
         this.addEventListener('enterframe', this.move);
 
         game.rootScene.addChild(this);
-        shootCount++;
+        game.shootCount++;
     },
 
     move: function(){
         this.frame = (this.frame + 1 ) % 4;
         this.x += this.moveSpeed * Math.cos(this.direction);
         this.y += this.moveSpeed * Math.sin(this.direction);
-        if(this.y > 320 || this.x > 320 || this.x < -this.width || this.y < -this.height) {
+        if(this.y > game.width || this.x > game.width || this.x < -this.width || this.y < -this.height) {
             this.remove();
         }
         this.checkCollision();
     },
 
     checkCollision: function(){
-        for (var i in enemies) {
-           if(enemies[i].intersect(this)) {
-             enemies[i].remove();
+        for (var i in game.enemies) {
+           if(game.enemies[i].intersect(this)) {
+             game.enemies[i].remove();
              this.hit();
              this.remove();
            }
@@ -327,12 +334,19 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
     hit: function(){
         this.addScore(this.rate);
         var nextRate;
-        if(this.rate >= 4096){
-            nextRate = 4096;
-            new Heart(rand(320 - 20), -32);
+
+        // Max Score
+        if(this.rate >= 9999){
+            nextRate = 9999;
         }else{
             nextRate = this.rate * 2;
         }
+
+        // Cure Item
+        if(this.rate >= 1024){
+            new Heart(rand(game.width - 20), - 32);
+        }
+
         for(var i = 0; i < 5 ; i++){
             new EnemyShoot(this.x, this.y, 2 * Math.PI * Math.random(), nextRate);
         }
@@ -346,7 +360,7 @@ var Shoot = enchant.Class.create(enchant.Sprite, {
     remove: function () {
         if(this.dead) return;
         game.rootScene.removeChild(this);
-        shootCount--;
+        game.shootCount--;
         this.dead = true;
         delete this;
     }
@@ -364,7 +378,7 @@ var EnemyShoot = enchant.Class.create(Shoot, {
     initialize: function (x, y, direction, rate) {
         Shoot.call(this, x, y, direction);
         this.rate = rate; 
-        this.deathCountDown = 10;
+        this.deathCountDown = 8;
 
         this.addEventListener('enterframe', function () {
             this.deathCountDown --;
@@ -394,11 +408,16 @@ var Score = enchant.Class.create(Label, {
             this.y--;
             this._element.style.opacity = this.count / this.MAX_COUNT;
             if(this.count <= 0){
-               game.rootScene.removeChild(this);
+                this.remove();
             }
         });
 
         game.rootScene.addChild(this);
+    },
+
+    remove : function(){
+        game.rootScene.removeChild(this);
+        delete this;
     }
 });
 
@@ -421,18 +440,22 @@ var CountDown = enchant.Class.create(Label, {
             this.y--;
             this._element.style.opacity = this.count / this.MAX_COUNT;
             if(this.count <= 0){
-               game.rootScene.removeChild(this);
+                this.remove();
             }
         });
 
         game.rootScene.addChild(this);
+    },
+
+    remove : function(){
+        game.rootScene.removeChild(this);
+        delete this;
     }
 });
 
 /**
  * Cure Life 
  */
-
 var Heart = enchant.Class.create(Sprite, {
     initialize: function (x, y) {
         enchant.Sprite.call(this, 20, 20);
@@ -449,8 +472,8 @@ var Heart = enchant.Class.create(Sprite, {
 
     move : function(){
         this.y += 2;
-        if(this.y >= 320 - 32){
-            this.y = 320 - 32;
+        if(this.y >= game.width - game.bg.height - this.height){
+            this.y = game.width - game.bg.height - this.height;
             this.count ++;
         }
 
@@ -463,13 +486,18 @@ var Heart = enchant.Class.create(Sprite, {
         }
         
         if(this.count >= this.COUNT_DOWN){
-            game.rootScene.removeChild(this);
+            this.remove();
         }
 
         // Collision
-        if(player.within(this, this.height)) {
-            player.cure();
-            game.rootScene.removeChild(this);
+        if(game.player.within(this, this.height)) {
+            game.player.cure();
+            this.remove();
         }
+    },
+
+    remove : function(){
+        game.rootScene.removeChild(this);
+        delete this;
     }
 });
