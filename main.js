@@ -14,6 +14,10 @@ window.onload = function () {
                  './images/enemy.gif',
                  './images/shot.gif',
                  './images/heart.png');
+    game.touchLeft = false;
+    game.touchRight = false;
+    game.touchCenter = false;
+    
     game.onload = function () {
         game.rootScene.backgroundColor = '#E0FFFF';
 
@@ -31,10 +35,46 @@ window.onload = function () {
         enemies = {}; 
         shootCount = 0;
         game.revivalCount = 0;
+
         
         // Main Loop
         game.rootScene.addEventListener('enterframe', update);
+        game.rootScene.addEventListener(Event.TOUCH_START, function(e){
+            if(e.x < 100){
+                game.touchLeft = true;
+            }else if(e.x >= 100 && e.x <= 220){
+                game.touchCenter = true;
+            }else if(e.x > 220){
+                game.touchRight = true;
+            }
+        });
+        game.rootScene.addEventListener(Event.TOUCH_END, function(e){
+            game.touchLeft = false;
+            game.touchRight = false;
+            game.touchCenter = false;
+        });
     };
+
+    game.keybind(90, 'a'); // z key
+    game.inputLeft = function(){
+        if(game.input.left || game.touchLeft){
+            return true;
+        }
+        return false;
+    }
+    game.inputRight = function(){
+        if(game.input.right || game.touchRight){
+            return true;
+        }
+        return false;
+    }
+    game.inputCenter = function(){
+        if(game.input.a || game.touchCenter){
+            return true;
+        }
+        return false;
+    }
+
     game.start();
 };
 
@@ -93,7 +133,6 @@ var Player = enchant.Class.create(enchant.Sprite, {
         this.deathCountDown = 0;
         this.dead = false;
         this.challenge = 4;
-        game.keybind(90, 'a'); // z key
 
         this.addEventListener('enterframe', this.update);
 
@@ -112,15 +151,15 @@ var Player = enchant.Class.create(enchant.Sprite, {
          this.frame = (this.frame + 1) % 3;
           
          // Shoot
-         if(game.input.a && game.frame % 3 == 0) {
+         if(game.inputCenter() && game.frame % 3 == 0) {
              var s = new PlayerShoot(this.x + 8, this.y - 16);
          }
 
          // Move
-         if (game.input.left){
+         if (game.inputLeft()){
              this.x -= 5;
              this.scaleX = -1;
-         }else if (game.input.right){
+         }else if (game.inputRight()){
              this.x += 5;
              this.scaleX = 1;
          }
@@ -133,7 +172,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
     },
 
     tryRivival : function (){
-        if(game.input.left && this.buttonDown == false){
+        if(game.inputLeft() && this.buttonDown == false){
             this.rivivalCount++;
             if(this.rivivalCount >= this.challenge){
                 this.rivival();
@@ -141,7 +180,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
             }
             this.scaleX = -1;
             this.buttonDown = true;
-        }else if(game.input.right){
+        }else if(game.inputRight()){
             this.scaleX = 1;
             this.buttonDown = false;
         }
