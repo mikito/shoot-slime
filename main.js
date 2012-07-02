@@ -146,7 +146,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
         enchant.Sprite.call(this, 32, 32);
         this.DEATH_COUNT_LIMIT = game.fps * 3;
         this.image = game.assets['./images/player.gif'];
-        this.buttonDown = false;
+        this.buttonDown = 0;
         this.x = x;
         this.y = y;
         this.frame = 0;
@@ -196,15 +196,21 @@ var Player = enchant.Class.create(enchant.Sprite, {
     tryRivival : function (){
         if(game.inputLeft() && this.buttonDown == false){
             this.rivivalCount++;
-            if(this.rivivalCount >= this.challenge){
-                this.rivival();
-                return;
-            }
             this.scaleX = -1;
-            this.buttonDown = true;
-        }else if(game.inputRight()){
+            this.buttonDown = 0;
+        }else if(game.inputRight() && this.buttonDown != 1){
+            this.rivivalCount++;
             this.scaleX = 1;
-            this.buttonDown = false;
+            this.buttonDown = 1;
+        }else if(game.inputCenter() && this.buttonDown != 2){
+            this.rivivalCount++;
+            this.scaleX *= -1;
+            this.buttonDown = 2;
+        }
+        
+        if(this.rivivalCount >= this.challenge){
+            this.rivival();
+            return;
         }
 
         if(this.deathCountDown <= 0){
