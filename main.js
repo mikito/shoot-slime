@@ -7,50 +7,30 @@ window.onload = function () {
     game = new Game(320, 320);
     game.MAX_ENEMY = 50;
     game.fps = 24;
-    game.preload('./images/bg.png',
+    game.preload(
+                 './images/bg.png',
                  './images/player.gif',
                  './images/enemy.gif',
                  './images/shot.gif',
-                 './images/heart.png');
+                 './images/heart.png',
+                 'pad.png',
+                 './images/button.png'
+                 );
     /**
      * Input Setting 
      */
-    game.touchLeft = false;
-    game.touchRight = false;
-    game.touchCenter = false;
-
-    // Touch Input
-    game.rootScene.addEventListener(Event.TOUCH_START, function(e){
-        if(e.x < game.width/3){
-            game.touchLeft = true;
-        }else if(e.x >= game.width/3 && e.x <= game.width * 2 /3){
-            game.touchCenter = true;
-        }else if(e.x > game.width * 2 / 3){
-            game.touchRight = true;
-        }
-    });
-    game.rootScene.addEventListener(Event.TOUCH_END, function(e){
-            game.touchLeft = false;
-            game.touchRight = false;
-            game.touchCenter = false;
-    });
-
+    game.touchShoot = false;
+     
     // Integral Key Input
     game.keybind(90, 'a'); // z key
     game.inputLeft = function(){
-        if(game.input.left || game.touchLeft){
-            return true;
-        }
-        return false;
+        return game.input.left;
     }
     game.inputRight = function(){
-        if(game.input.right || game.touchRight){
-            return true;
-        }
-        return false;
+        return game.input.right;
     }
     game.inputCenter = function(){
-        if(game.input.a || game.touchCenter){
+        if(game.input.a || game.touchShoot){
             return true;
         }
         return false;
@@ -77,6 +57,12 @@ window.onload = function () {
         game.enemies = {}; 
         game.shootCount = 0;
         game.revivalCount = 0;
+
+        var pad = new Pad();
+        game.rootScene.addChild(pad);
+        pad.moveTo(0,220);
+
+        new ShootButton(game.width - 70, game.height - 70);
     }
 
     /**
@@ -128,6 +114,29 @@ window.onload = function () {
      */
     game.start();
 }
+
+/**
+ * Shoot Button
+ */
+var ShootButton = enchant.Class.create(enchant.Sprite, {
+    initialize: function (x, y){
+        enchant.Sprite.call(this, 50, 50);
+        this.image = game.assets['./images/button.png'];
+        this.x = x;
+        this.y = y;
+        this.addEventListener(Event.TOUCH_START, function(e){
+            game.touchShoot = true;
+            this.frame = 1;
+        });
+
+        this.addEventListener(Event.TOUCH_END, function(e){
+            game.touchShoot = false;
+            this.frame = 0;
+        });
+
+        game.rootScene.addChild(this);
+    }
+});
 
 /**
  * Charactor
