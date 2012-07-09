@@ -60,9 +60,9 @@ window.onload = function () {
 
         var pad = new Pad();
         game.rootScene.addChild(pad);
-        pad.moveTo(0,220);
+        pad.moveTo(0, (game.height - pad.height) / 2);
 
-        new ShootButton(game.width - 70, game.height - 70);
+        new ShootButton(game.width - 70, game.height / 2 );
     }
 
     /**
@@ -123,7 +123,7 @@ var ShootButton = enchant.Class.create(enchant.Sprite, {
         enchant.Sprite.call(this, 50, 50);
         this.image = game.assets['./images/button.png'];
         this.x = x;
-        this.y = y;
+        this.y = y - this.height / 2;
         this.addEventListener(Event.TOUCH_START, function(e){
             game.touchShoot = true;
             this.frame = 1;
@@ -194,7 +194,7 @@ var Player = enchant.Class.create(enchant.Sprite, {
     },
 
     tryRivival : function (){
-        if(game.inputLeft() && this.buttonDown == false){
+        if(game.inputLeft() && this.buttonDown != 0){
             this.rivivalCount++;
             this.scaleX = -1;
             this.buttonDown = 0;
